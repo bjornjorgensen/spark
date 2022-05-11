@@ -3,12 +3,13 @@ on:
   push:
     branches:
       - master
+      - sonarcloud
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
   sonarcloud:
     name: SonarCloud
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
