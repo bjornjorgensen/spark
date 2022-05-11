@@ -34,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./build/mvn -DskipTests clean package verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=bjornjorgensen_spark
+        run: ./build/mvn -DskipTests clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=bjornjorgensen_spark
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
