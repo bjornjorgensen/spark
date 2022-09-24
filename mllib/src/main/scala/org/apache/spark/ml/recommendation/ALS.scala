@@ -465,6 +465,8 @@ class ALSModel private[ml] (
     import srcFactors.sparkSession.implicits._
     import scala.collection.JavaConverters._
 
+    val ratingColumn = "rating"
+    val recommendColumn = "recommendations"
     val srcFactorsBlocked = blockify(srcFactors.as[(Int, Array[Float])], blockSize)
     val dstFactorsBlocked = blockify(dstFactors.as[(Int, Array[Float])], blockSize)
     val ratings = srcFactorsBlocked.crossJoin(dstFactorsBlocked)
@@ -496,18 +498,20 @@ class ALSModel private[ml] (
               .iterator.map { j => (srcId, dstIds(j), scores(j)) }
           }
         }
-      }
-    // We'll force the IDs to be Int. Unfortunately this converts IDs to Int in the output.
-    val topKAggregator = new TopByKeyAggregator[Int, Int, Float](num, Ordering.by(_._2))
-    val recs = ratings.as[(Int, Int, Float)].groupByKey(_._1).agg(topKAggregator.toColumn)
-      .toDF("id", "recommendations")
+      }.toDF(srcOutputColumn, dstOutputColumn, ratingColumn)
 
     val arrayType = ArrayType(
       new StructType()
         .add(dstOutputColumn, IntegerType)
-        .add("rating", FloatType)
+        .add(ratingColumn, FloatType)
     )
-    recs.select($"id".as(srcOutputColumn), $"recommendations".cast(arrayType))
+
+    ratings.groupBy(srcOutputColumn)
+      .agg(collect_top_k(struct(ratingColumn, dstOutputColumn), num, false))
+      .as[(Int, Seq[(Float, Int)])]
+      .map(t => (t._1, t._2.map(p => (p._2, p._1))))
+      .toDF(srcOutputColumn, recommendColumn)
+      .withColumn(recommendColumn, col(recommendColumn).cast(arrayType))
   }
 
   /**
@@ -1279,9 +1283,8 @@ object ALS extends DefaultParamsReadable[ALS] with Logging {
       inBlocks: RDD[(Int, InBlock[ID])],
       rank: Int,
       seed: Long): RDD[(Int, FactorBlock)] = {
-    // Choose a unit vector uniformly at random from the unit sphere, but from the
-    // "first quadrant" where all elements are nonnegative. This can be done by choosing
-    // elements distributed as Normal(0,1) and taking the absolute value, and then normalizing.
+    // Choose a unit vector uniformly at random from the unit sphere. This can be done by choosing
+    // elements distributed as Normal(0,1), and then normalizing.
     // This appears to create factorizations that have a slightly better reconstruction
     // (<1%) compared picking elements uniformly at random in [0,1].
     inBlocks.mapPartitions({ iter =>

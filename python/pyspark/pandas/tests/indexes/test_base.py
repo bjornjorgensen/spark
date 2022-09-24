@@ -61,6 +61,14 @@ class IndexesTest(ComparisonTestBase, TestUtils):
             self.assert_eq(psdf.index, pdf.index)
             self.assert_eq(type(psdf.index).__name__, type(pdf.index).__name__)
 
+        self.assert_eq(ps.Index([])._summary(), "Index: 0 entries")
+        with self.assertRaisesRegexp(ValueError, "The truth value of a Int64Index is ambiguous."):
+            bool(ps.Index([1]))
+        with self.assertRaisesRegexp(TypeError, "Index.name must be a hashable type"):
+            ps.Int64Index([1, 2, 3], name=[(1, 2, 3)])
+        with self.assertRaisesRegexp(TypeError, "Index.name must be a hashable type"):
+            ps.Float64Index([1.0, 2.0, 3.0], name=[(1, 2, 3)])
+
     def test_index_from_series(self):
         pser = pd.Series([1, 2, 3], name="a", index=[10, 20, 30])
         psser = ps.from_pandas(pser)
@@ -89,6 +97,7 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         self.assert_eq(ps.Index(psidx), pd.Index(pidx))
         self.assert_eq(ps.Index(psidx, dtype="float"), pd.Index(pidx, dtype="float"))
         self.assert_eq(ps.Index(psidx, name="x"), pd.Index(pidx, name="x"))
+        self.assert_eq(ps.Index(psidx, copy=True), pd.Index(pidx, copy=True))
 
         self.assert_eq(ps.Int64Index(psidx), pd.Int64Index(pidx))
         self.assert_eq(ps.Float64Index(psidx), pd.Float64Index(pidx))
@@ -442,6 +451,20 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         self.assert_eq(
             psmidx1.symmetric_difference(psmidx2).sort_values(),
             pmidx1.symmetric_difference(pmidx2).sort_values(),
+        )
+
+        # Pandas has a bug that raise TypeError when setting `result_name` for MultiIndex.
+        pandas_result = pmidx1.symmetric_difference(pmidx2)
+        pandas_result.names = ["a", "b"]
+        self.assert_eq(
+            psmidx1.symmetric_difference(psmidx2, result_name=["a", "b"]).sort_values(),
+            pandas_result,
+        )
+
+        # Pandas sort the result by default, so doesn't provide the `True` for sort.
+        self.assert_eq(
+            psmidx1.symmetric_difference(psmidx2, sort=True),
+            pmidx1.symmetric_difference(pmidx2),
         )
 
         idx = ps.Index(["a", "b", "c"])
@@ -802,18 +825,38 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         psidx.names = ["lv", "lv"]
         self.assertRaises(ValueError, lambda: psidx.drop(["x", "y"], level="lv"))
 
+    def _test_sort_values(self, pidx, psidx):
+        self.assert_eq(pidx.sort_values(), psidx.sort_values())
+        # Parameter ascending
+        self.assert_eq(pidx.sort_values(ascending=False), psidx.sort_values(ascending=False))
+        # Parameter return_indexer
+        p_sorted, p_indexer = pidx.sort_values(return_indexer=True)
+        ps_sorted, ps_indexer = psidx.sort_values(return_indexer=True)
+        self.assert_eq(p_sorted, ps_sorted)
+        self.assert_eq(p_indexer, ps_indexer.to_list())
+        self.assert_eq(
+            pidx.sort_values(return_indexer=False), psidx.sort_values(return_indexer=False)
+        )
+        # Parameter return_indexer and ascending
+        p_sorted, p_indexer = pidx.sort_values(return_indexer=True, ascending=False)
+        ps_sorted, ps_indexer = psidx.sort_values(return_indexer=True, ascending=False)
+        self.assert_eq(p_sorted, ps_sorted)
+        self.assert_eq(p_indexer, ps_indexer.to_list())
+        self.assert_eq(
+            pidx.sort_values(return_indexer=False, ascending=False),
+            psidx.sort_values(return_indexer=False, ascending=False),
+        )
+
     def test_sort_values(self):
         pidx = pd.Index([-10, -100, 200, 100])
         psidx = ps.from_pandas(pidx)
 
-        self.assert_eq(pidx.sort_values(), psidx.sort_values())
-        self.assert_eq(pidx.sort_values(ascending=False), psidx.sort_values(ascending=False))
+        self._test_sort_values(pidx, psidx)
 
         pidx.name = "koalas"
         psidx.name = "koalas"
 
-        self.assert_eq(pidx.sort_values(), psidx.sort_values())
-        self.assert_eq(pidx.sort_values(ascending=False), psidx.sort_values(ascending=False))
+        self._test_sort_values(pidx, psidx)
 
         pidx = pd.MultiIndex.from_tuples([("a", "x", 1), ("b", "y", 2), ("c", "z", 3)])
         psidx = ps.from_pandas(pidx)
@@ -821,8 +864,7 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         pidx.names = ["hello", "koalas", "goodbye"]
         psidx.names = ["hello", "koalas", "goodbye"]
 
-        self.assert_eq(pidx.sort_values(), psidx.sort_values())
-        self.assert_eq(pidx.sort_values(ascending=False), psidx.sort_values(ascending=False))
+        self._test_sort_values(pidx, psidx)
 
     def test_index_drop_duplicates(self):
         pidx = pd.Index([1, 1, 2])
@@ -1493,6 +1535,9 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         self.assert_eq(psidx1.union(psidx2), pidx1.union(pidx2))
         self.assert_eq(psidx2.union(psidx1), pidx2.union(pidx1))
         self.assert_eq(psidx1.union(psidx3), pidx1.union(pidx3))
+        # Deprecated case, but adding to track if pandas stop supporting union
+        # as a set operation. It should work fine until stop supporting anyway.
+        self.assert_eq(pidx1 | pidx2, psidx1 | psidx2)
 
         self.assert_eq(psidx1.union([3, 4, 5, 6]), pidx1.union([3, 4, 5, 6]), almost=True)
         self.assert_eq(psidx2.union([1, 2, 3, 4]), pidx2.union([1, 2, 3, 4]), almost=True)
@@ -1808,6 +1853,9 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         self.assert_eq(
             (pidx + 1).intersection(pidx_other), (psidx + 1).intersection(psidx_other).sort_values()
         )
+        # Deprecated case, but adding to track if pandas stop supporting intersection
+        # as a set operation. It should work fine until stop supporting anyway.
+        self.assert_eq(pidx & pidx_other, (psidx & psidx_other).sort_values())
 
         pidx_other_different_name = pd.Index([3, 4, 5, 6], name="Databricks")
         psidx_other_different_name = ps.from_pandas(pidx_other_different_name)
@@ -1935,6 +1983,13 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         other = {("c", "z"): None, ("d", "w"): None}
         self.assert_eq(pmidx.intersection(other), psmidx.intersection(other).sort_values())
 
+        # MultiIndex with different names.
+        pmidx1 = pd.MultiIndex.from_tuples([("a", "x"), ("b", "y"), ("c", "z")], names=["X", "Y"])
+        pmidx2 = pd.MultiIndex.from_tuples([("c", "z"), ("d", "w")], names=["A", "B"])
+        psmidx1 = ps.from_pandas(pmidx1)
+        psmidx2 = ps.from_pandas(pmidx2)
+        self.assert_eq(pmidx1.intersection(pmidx2), psmidx1.intersection(psmidx2).sort_values())
+
         with self.assertRaisesRegex(TypeError, "Input must be Index or array-like"):
             psidx.intersection(4)
         with self.assertRaisesRegex(TypeError, "other must be a MultiIndex or a list of tuples"):
@@ -1947,6 +2002,9 @@ class IndexesTest(ComparisonTestBase, TestUtils):
             psidx.intersection(ps.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}))
         with self.assertRaisesRegex(ValueError, "Index data must be 1-dimensional"):
             psmidx.intersection(ps.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}))
+        # other = list of tuple
+        with self.assertRaisesRegex(ValueError, "Names should be list-like for a MultiIndex"):
+            psidx.intersection([(1, 2), (3, 4)])
 
     def test_item(self):
         pidx = pd.Index([10])
@@ -2191,32 +2249,48 @@ class IndexesTest(ComparisonTestBase, TestUtils):
         psidx = ps.from_pandas(pidx)
         self.assert_eq(pidx.insert(1, 100), psidx.insert(1, 100))
         self.assert_eq(pidx.insert(-1, 100), psidx.insert(-1, 100))
-        self.assert_eq(pidx.insert(100, 100), psidx.insert(100, 100))
-        self.assert_eq(pidx.insert(-100, 100), psidx.insert(-100, 100))
+        err_msg = "index 100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(100, 100)
+        err_msg = "index -100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(-100, 100)
 
         # Floating
         pidx = pd.Index([1.0, 2.0, 3.0], name="Koalas")
         psidx = ps.from_pandas(pidx)
         self.assert_eq(pidx.insert(1, 100.0), psidx.insert(1, 100.0))
         self.assert_eq(pidx.insert(-1, 100.0), psidx.insert(-1, 100.0))
-        self.assert_eq(pidx.insert(100, 100.0), psidx.insert(100, 100.0))
-        self.assert_eq(pidx.insert(-100, 100.0), psidx.insert(-100, 100.0))
+        err_msg = "index 100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(100, 100)
+        err_msg = "index -100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(-100, 100)
 
         # String
         pidx = pd.Index(["a", "b", "c"], name="Koalas")
         psidx = ps.from_pandas(pidx)
         self.assert_eq(pidx.insert(1, "x"), psidx.insert(1, "x"))
         self.assert_eq(pidx.insert(-1, "x"), psidx.insert(-1, "x"))
-        self.assert_eq(pidx.insert(100, "x"), psidx.insert(100, "x"))
-        self.assert_eq(pidx.insert(-100, "x"), psidx.insert(-100, "x"))
+        err_msg = "index 100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(100, "x")
+        err_msg = "index -100 is out of bounds for axis 0 with size 3"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(-100, "x")
 
         # Boolean
         pidx = pd.Index([True, False, True, False], name="Koalas")
         psidx = ps.from_pandas(pidx)
         self.assert_eq(pidx.insert(1, True), psidx.insert(1, True))
         self.assert_eq(pidx.insert(-1, True), psidx.insert(-1, True))
-        self.assert_eq(pidx.insert(100, True), psidx.insert(100, True))
-        self.assert_eq(pidx.insert(-100, True), psidx.insert(-100, True))
+        err_msg = "index 100 is out of bounds for axis 0 with size 4"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(100, True)
+        err_msg = "index -100 is out of bounds for axis 0 with size 4"
+        with self.assertRaisesRegex(IndexError, err_msg):
+            psidx.insert(-100, True)
 
         # MultiIndex
         pmidx = pd.MultiIndex.from_tuples(
@@ -2475,6 +2549,14 @@ class IndexesTest(ComparisonTestBase, TestUtils):
             IndexError, "Too many levels: Index has only 2 levels, -3 is not a valid level number"
         ):
             psmidx.droplevel(-3)
+
+    def test_multi_index_nunique(self):
+        tuples = [(1, "red"), (1, "blue"), (2, "red"), (2, "green")]
+        pmidx = pd.MultiIndex.from_tuples(tuples)
+        psmidx = ps.from_pandas(pmidx)
+
+        with self.assertRaisesRegex(NotImplementedError, "nunique is not defined for MultiIndex"):
+            psmidx.nunique()
 
 
 if __name__ == "__main__":
