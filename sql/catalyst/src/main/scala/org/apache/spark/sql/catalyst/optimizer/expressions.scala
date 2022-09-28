@@ -109,7 +109,7 @@ object ConstantFolding extends Rule[LogicalPlan] {
  * - Using this mapping, replace occurrence of the attributes with the corresponding constant values
  *   in the AND node.
  */
-object ConstantPropagation extends Rule[LogicalPlan] with PredicateHelper {
+object ConstantPropagation extends Rule[LogicalPlan] {
   def apply(plan: LogicalPlan): LogicalPlan = plan.transformUpWithPruning(
     _.containsAllPatterns(LITERAL, FILTER), ruleId) {
     case f: Filter =>
@@ -532,7 +532,7 @@ object SimplifyBinaryComparison
 /**
  * Simplifies conditional expressions (if / case).
  */
-object SimplifyConditionals extends Rule[LogicalPlan] with PredicateHelper {
+object SimplifyConditionals extends Rule[LogicalPlan] {
   private def falseOrNullLiteral(e: Expression): Boolean = e match {
     case FalseLiteral => true
     case Literal(null, _) => true
@@ -617,7 +617,7 @@ object SimplifyConditionals extends Rule[LogicalPlan] with PredicateHelper {
 /**
  * Push the foldable expression into (if / case) branches.
  */
-object PushFoldableIntoBranches extends Rule[LogicalPlan] with PredicateHelper {
+object PushFoldableIntoBranches extends Rule[LogicalPlan] {
 
   // To be conservative here: it's only a guaranteed win if all but at most only one branch
   // end up being not foldable.
@@ -631,7 +631,8 @@ object PushFoldableIntoBranches extends Rule[LogicalPlan] with PredicateHelper {
     case _: UnaryMathExpression | _: Abs | _: Bin | _: Factorial | _: Hex => true
     case _: String2StringExpression | _: Ascii | _: Base64 | _: BitLength | _: Chr | _: Length =>
       true
-    case _: CastBase => true
+    case _: Cast => true
+    case _: TryEval => true
     case _: GetDateField | _: LastDay => true
     case _: ExtractIntervalPart[_] => true
     case _: ArraySetLike => true
@@ -754,12 +755,18 @@ object LikeSimplification extends Rule[LogicalPlan] {
       multi
     } else {
       multi match {
-        case l: LikeAll => And(replacements.reduceLeft(And), l.copy(patterns = remainPatterns))
+        case l: LikeAll =>
+          val and = replacements.reduceLeft(And)
+          if (remainPatterns.nonEmpty) And(and, l.copy(patterns = remainPatterns)) else and
         case l: NotLikeAll =>
-          And(replacements.map(Not(_)).reduceLeft(And), l.copy(patterns = remainPatterns))
-        case l: LikeAny => Or(replacements.reduceLeft(Or), l.copy(patterns = remainPatterns))
+          val and = replacements.map(Not(_)).reduceLeft(And)
+          if (remainPatterns.nonEmpty) And(and, l.copy(patterns = remainPatterns)) else and
+        case l: LikeAny =>
+          val or = replacements.reduceLeft(Or)
+          if (remainPatterns.nonEmpty) Or(or, l.copy(patterns = remainPatterns)) else or
         case l: NotLikeAny =>
-          Or(replacements.map(Not(_)).reduceLeft(Or), l.copy(patterns = remainPatterns))
+          val or = replacements.map(Not(_)).reduceLeft(Or)
+          if (remainPatterns.nonEmpty) Or(or, l.copy(patterns = remainPatterns)) else or
       }
     }
   }
@@ -773,10 +780,14 @@ object LikeSimplification extends Rule[LogicalPlan] {
       } else {
         simplifyLike(input, pattern.toString, escapeChar).getOrElse(l)
       }
-    case l @ LikeAll(child, patterns) => simplifyMultiLike(child, patterns, l)
-    case l @ NotLikeAll(child, patterns) => simplifyMultiLike(child, patterns, l)
-    case l @ LikeAny(child, patterns) => simplifyMultiLike(child, patterns, l)
-    case l @ NotLikeAny(child, patterns) => simplifyMultiLike(child, patterns, l)
+    case l @ LikeAll(child, patterns) if CollapseProject.isCheap(child) =>
+      simplifyMultiLike(child, patterns, l)
+    case l @ NotLikeAll(child, patterns) if CollapseProject.isCheap(child) =>
+      simplifyMultiLike(child, patterns, l)
+    case l @ LikeAny(child, patterns) if CollapseProject.isCheap(child) =>
+      simplifyMultiLike(child, patterns, l)
+    case l @ NotLikeAny(child, patterns) if CollapseProject.isCheap(child) =>
+      simplifyMultiLike(child, patterns, l)
   }
 }
 
@@ -1029,12 +1040,8 @@ object SimplifyCasts extends Rule[LogicalPlan] {
 
   // Returns whether the from DataType can be safely casted to the to DataType without losing
   // any precision or range.
-  private def isWiderCast(from: DataType, to: NumericType): Boolean = (from, to) match {
-    case (from: NumericType, to: DecimalType) if to.isWiderThan(from) => true
-    case (from: DecimalType, to: NumericType) if from.isTighterThan(to) => true
-    case (from: IntegralType, to: IntegralType) => Cast.canUpCast(from, to)
-    case _ => from == to
-  }
+  private def isWiderCast(from: DataType, to: NumericType): Boolean =
+    from.isInstanceOf[NumericType] && Cast.canUpCast(from, to)
 }
 
 

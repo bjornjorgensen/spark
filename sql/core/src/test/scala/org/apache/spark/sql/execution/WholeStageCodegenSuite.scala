@@ -17,7 +17,6 @@
 
 package org.apache.spark.sql.execution
 
-import org.apache.spark.SparkException
 import org.apache.spark.sql.{Dataset, QueryTest, Row, SaveMode}
 import org.apache.spark.sql.catalyst.expressions.codegen.{ByteCodeStats, CodeAndComment, CodeGenerator}
 import org.apache.spark.sql.execution.adaptive.DisableAdaptiveExecutionSuite
@@ -43,7 +42,7 @@ class WholeStageCodegenSuite extends QueryTest with SharedSparkSession
   }
 
   test("HashAggregate should be included in WholeStageCodegen") {
-    val df = spark.range(10).groupBy().agg(max(col("id")), avg(col("id")))
+    val df = spark.range(10).agg(max(col("id")), avg(col("id")))
     val plan = df.queryExecution.executedPlan
     assert(plan.exists(p =>
       p.isInstanceOf[WholeStageCodegenExec] &&
@@ -763,11 +762,10 @@ class WholeStageCodegenSuite extends QueryTest with SharedSparkSession
           "SELECT AVG(v) FROM VALUES(1) t(v)",
           // Tet case with keys
           "SELECT k, AVG(v) FROM VALUES((1, 1)) t(k, v) GROUP BY k").foreach { query =>
-          val e = intercept[SparkException] {
+          val e = intercept[IllegalStateException] {
             sql(query).collect
           }
-          assert(e.getErrorClass === "INTERNAL_ERROR")
-          assert(e.getCause.getMessage.contains(expectedErrMsg))
+          assert(e.getMessage.contains(expectedErrMsg))
         }
       }
     }
@@ -786,11 +784,10 @@ class WholeStageCodegenSuite extends QueryTest with SharedSparkSession
           // Tet case with keys
           "SELECT k, AVG(a + b), SUM(a + b + c) FROM VALUES((1, 1, 1, 1)) t(k, a, b, c) " +
             "GROUP BY k").foreach { query =>
-          val e = intercept[SparkException] {
+          val e = intercept[IllegalStateException] {
             sql(query).collect
           }
-          assert(e.getErrorClass === "INTERNAL_ERROR")
-          assert(e.getCause.getMessage.contains(expectedErrMsg))
+          assert(e.getMessage.contains(expectedErrMsg))
         }
       }
     }
