@@ -965,10 +965,10 @@ class Frame(object, metaclass=ABCMeta):
         >>> df['col 1'].to_json()
         '[{"col 1":"a"},{"col 1":"c"}]'
 
-        >>> df.to_json(path=r'%s/to_json/foo.json' % path, num_files=1)
+        >>> df.to_json(path=r'%s/to_json/foo.json' % path, repartition=1)
         >>> ps.read_json(
         ...     path=r'%s/to_json/foo.json' % path
-        ... ).sort_values(by="col 1")
+        ... ).sort_values(by="col 1") # doctest: +NORMALIZE_WHITESPACE
           col 1 col 2
         0     a     b
         1     c     d
