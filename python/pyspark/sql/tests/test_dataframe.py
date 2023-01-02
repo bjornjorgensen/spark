@@ -1567,6 +1567,139 @@ class QueryExecutionListenerTests(unittest.TestCase, SQLTestUtils):
                 "The callback from the query execution listener should be called after 'toPandas'",
             )
 
+    def test_get_complex_fields():
+        # Create a simple DataFrame with a struct field and an array field
+        struct = StructType([StructField("a", IntegerType()), StructField("b", StringType())])
+        array = ArrayType(StringType())
+        fields = [StructField("struct", struct), StructField("array", array)]
+        schema = StructType(fields)
+        data = [
+            (Row(a=1, b="test"), ["a", "b", "c"]),
+            (Row(a=2, b="test2"), ["d", "e"]),
+        ]
+        df = spark.createDataFrame(data, schema)
+
+        # Get the complex fields of the DataFrame
+        complex_fields = get_complex_fields(df)
+
+        # Assert that the complex fields are as expected
+        assert complex_fields == {"struct": struct, "array": array}
+
+    def test_flatten_structs():
+        # Create a simple DataFrame with a struct field
+        struct = StructType([StructField("a", IntegerType()), StructField("b", StringType())])
+        fields = [StructField("struct", struct)]
+        schema = StructType(fields)
+        data = [
+            (Row(a=1, b="test"),),
+            (Row(a=2, b="test2"),),
+        ]
+        df = spark.createDataFrame(data, schema)
+
+        # Flatten the struct field using ':' as the separator
+        complex_fields = {"struct": struct}
+        df = flatten_structs(df, "struct", complex_fields, ":")
+
+        # Assert that the struct field has been flattened into two separate columns
+        assert df.schema == StructType(
+            [
+                StructField("struct:a", IntegerType()),
+                StructField("struct:b", StringType()),
+            ]
+        )
+        assert df.collect() == [
+            Row(struct_a=1, struct_b="test"),
+            Row(struct_a=2, struct_b="test2"),
+        ]
+
+    def test_explode_arrays():
+        # Create a simple DataFrame with an array field
+        array = ArrayType(StringType())
+        fields = [StructField("array", array)]
+        schema = StructType(fields)
+        data = [
+            (["a", "b", "c"],),
+            (["d", "e"],),
+        ]
+        df = spark.createDataFrame(data, schema)
+
+        # Explode the array field
+        df = explode_arrays(df, "array")
+
+        # Assert that the array field has been exploded into separate rows
+        assert df.schema == StructType([StructField("array", StringType())])
+        assert df.collect() == [
+            Row(array="a"),
+            Row(array="b"),
+            Row(array="c"),
+            Row(array="d"),
+            Row(array="e"),
+        ]
+
+    def test_flatten_maps():
+        # Create a simple DataFrame with a map field
+        map_type = MapType(StringType(), IntegerType())
+        fields = [StructField("map", map_type)]
+        schema = StructType(fields)
+        data = [
+            ({"a": 1, "b": 2},),
+            ({"c": 3, "d": 4},),
+        ]
+        df = spark.createDataFrame(data, schema)
+
+        # Flatten the map field using ':' as the separator
+        df = flatten_maps(df, "map", ":")
+
+        # Assert that the map field has been flattened into two separate columns
+        assert df.schema == StructType(
+            [
+                StructField("map:a", IntegerType()),
+                StructField("map:b", IntegerType()),
+            ]
+        )
+        assert df.collect() == [
+            Row(map_a=1, map_b=2),
+            Row(map_a=3, map_b=4),
+        ]
+
+    def test_flatten_test():
+        # Create a simple DataFrame with a struct field, an array field, and a map field
+        struct = StructType([StructField("a", IntegerType()), StructField("b", StringType())])
+        array = ArrayType(StringType())
+        map_type = MapType(StringType(), IntegerType())
+        fields = [
+            StructField("struct", struct),
+            StructField("array", array),
+            StructField("map", map_type),
+        ]
+        schema = StructType(fields)
+        data = [
+            (Row(a=1, b="test"), ["a", "b", "c"], {"a": 1, "b": 2}),
+            (Row(a=2, b="test2"), ["d", "e"], {"c": 3, "d": 4}),
+        ]
+        df = spark.createDataFrame(data, schema)
+
+        # Flatten the complex fields using ':' as the separator
+        df = flatten_test(df, ":")
+
+        # Assert that the complex fields have been flattened as expected
+        assert df.schema == StructType(
+            [
+                StructField("struct:a", IntegerType()),
+                StructField("struct:b", StringType()),
+                StructField("array", StringType()),
+                StructField("map:a", IntegerType()),
+                StructField("map:b", IntegerType()),
+            ]
+        )
+        assert df.collect() == [
+            Row(struct_a=1, struct_b="test", array="a", map_a=1, map_b=2),
+            Row(struct_a=1, struct_b="test", array="b", map_a=1, map_b=2),
+            Row(struct_a=1, struct_b="test", array="c", map_a=1, map_b=2),
+            Row(struct_a=2, struct_b="test2", array="d", map_a=3, map_b=4),
+            Row(struct_a=2, struct_b="test2", array="e", map_a=3, map_b=4),
+        ]
+
 
 class DataFrameTests(DataFrameTestsMixin, ReusedSQLTestCase):
     pass

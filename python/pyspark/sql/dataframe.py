@@ -5010,6 +5010,136 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
         """
         return DataFrameWriterV2(self, table)
 
+    # from pyspark.sql.types import ArrayType, StructType, MapType
+
+    def get_complex_fields(df: DataFrame) -> Dict[str, DataType]:
+        complex_fields = dict(
+            [
+                (field.name, field.dataType)
+                for field in df.schema.fields
+                if type(field.dataType) == ArrayType
+                or type(field.dataType) == StructType
+                or type(field.dataType) == MapType
+            ]
+        )
+        return complex_fields
+
+    def flatten_structs(
+        df: DataFrame, col_name: str, complex_fields: Dict[str, DataType], sep: str = ":"
+    ) -> DataFrame:
+        expanded = [
+            col(col_name + "." + k).alias(col_name + sep + k)
+            for k in [n.name for n in complex_fields[col_name]]
+        ]
+        df = df.select("*", *expanded).drop(col_name)
+        return df
+
+    def explode_arrays(df: DataFrame, col_name: str) -> DataFrame:
+        """
+        Explode an array column in a DataFrame.
+        This function takes a DataFrame df and a string col_name representing the name of an
+        array column in df, and returns a new DataFrame with a row for each element in the
+        array column. It first checks if the input column is indeed an array column using
+        the isinstance function and ArrayType from the pyspark.sql.types module.
+        If the input column is not an array column, it raises a ValueError. If the input
+        column is an array column, it uses the withColumn method of df and the explode_outer
+        function from pyspark.sql.functions
+        to explode the array column and create a new DataFrame.
+        Parameters
+        ----------
+        df: pyspark.sql.dataframe.DataFrame
+            The input DataFrame.
+        col_name: str
+            The name of the array column to explode.
+
+        Returns
+        -------
+        pyspark.sql.dataframe.DataFrame
+            A new DataFrame with a row for each element in the array column.
+        """
+        # Check if the input column is an array
+        if not isinstance(df.schema[col_name].dataType, ArrayType):
+            raise ValueError(f"Column {col_name} is not an array column.")
+
+        # Explode the array column
+        df = df.withColumn(col_name, explode_outer(col_name))
+
+        return df
+
+    def flatten_maps(df: DataFrame, col_name: str, sep: str = ":") -> DataFrame:
+        """
+        This function appears to take a DataFrame df, a string column col_name, and a string
+        separator sep, and returns a new DataFrame with the values in the map stored
+        in col_name flattened into new columns.
+
+        Here's a breakdown of what the function does:
+
+        It extracts the distinct keys of the maps in col_name using the
+        explode_outer and map_keys functions.
+        It creates a list of the extracted keys.
+        It creates a list of new columns for each key by using the getItem method on the col
+        function and alias method. The new column names are the original column name
+        concatenated with the separator and the key.
+        It creates a new DataFrame by selecting all the original columns except
+        col_name, and adding the new key columns.
+        It returns the new DataFrame.
+        """
+
+        keys_df = df.select(explode_outer(map_keys(col(col_name)))).distinct()
+        keys = list(map(lambda row: row[0], keys_df.collect()))
+        key_cols = list(
+            map(
+                lambda f: col(col_name).getItem(f).alias(str(col_name + sep + f)),
+                keys,
+            )
+        )
+        drop_column_list = [col_name]
+        df = df.select(
+            [col_name for col_name in df.columns if col_name not in drop_column_list] + key_cols
+        )
+        return df
+
+    def flatten_test(df: DataFrame, sep: str = ":") -> DataFrame:
+        """
+        This is a function that flattens complex data types in a DataFrame in Apache Spark.
+        The function takes a DataFrame df and a string sep as input. The sep parameter specifies
+        the separator to use when flattening the data.
+
+        The function first gets a dictionary of complex fields in the DataFrame using the
+        get_complex_fields function.
+        This dictionary has column names as keys and column data types as values.
+
+        The function then enters a loop, which continues until there are no more complex fields
+        in the DataFrame. Inside the loop, it gets the first column name from the dictionary of
+        complex fields and determines the data type of the column. If the data type is StructType,
+        the function calls the flatten_structs function to flatten the structs in the column.
+        If the data type is ArrayType, the function calls the explode_arrays function to explode
+        the arrays in the column. If the data type is MapType, the function calls the flatten_maps
+        function to flatten the maps in the column.
+
+        After flattening the complex data types in the column,
+        the function updates the dictionary of
+        complex fields by calling the get_complex_fields function again.
+
+        Finally, the function returns the modified DataFrame.
+        """
+
+        complex_fields = get_complex_fields(df)
+
+        while len(complex_fields) != 0:
+            col_name = list(complex_fields.keys())[0]
+
+            if type(complex_fields[col_name]) == StructType:
+                df = flatten_structs(df, col_name, complex_fields, sep)
+            elif type(complex_fields[col_name]) == ArrayType:
+                df = explode_arrays(df, col_name)
+            elif type(complex_fields[col_name]) == MapType:
+                df = flatten_maps(df, col_name, sep)
+
+            complex_fields = get_complex_fields(df)
+
+        return df
+
     # Keep to_pandas_on_spark for backward compatibility for now.
     def to_pandas_on_spark(
         self, index_col: Optional[Union[str, List[str]]] = None
