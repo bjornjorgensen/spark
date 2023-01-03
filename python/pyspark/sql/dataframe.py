@@ -43,7 +43,7 @@ from py4j.java_gateway import JavaObject
 
 
 from pyspark.sql.functions import col, explode_outer, map_keys
-from pyspark.sql.types import ArrayType, MapType, StructType, DataType
+from pyspark.sql.types import ArrayType, MapType, StructType, DataType, StringType
 from typing import Dict, DataFrame
 
 from pyspark import copy_func, _NoValue
