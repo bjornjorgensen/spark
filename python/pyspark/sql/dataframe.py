@@ -41,6 +41,11 @@ from typing import (
 
 from py4j.java_gateway import JavaObject
 
+
+from pyspark.sql.functions import col, explode_outer, map_keys
+from pyspark.sql.types import ArrayType, MapType, StructType, DataType
+from typing import Dict, DataFrame
+
 from pyspark import copy_func, _NoValue
 from pyspark._globals import _NoValueType
 from pyspark.context import SparkContext
@@ -5009,8 +5014,6 @@ class DataFrame(PandasMapOpsMixin, PandasConversionMixin):
         ... ).partitionedBy("col").createOrReplace()
         """
         return DataFrameWriterV2(self, table)
-
-    # from pyspark.sql.types import ArrayType, StructType, MapType
 
     def get_complex_fields(df: DataFrame) -> Dict[str, DataType]:
         complex_fields = dict(
