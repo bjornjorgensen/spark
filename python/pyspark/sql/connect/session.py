@@ -159,7 +159,7 @@ class SparkSession:
           - 'prefer_timestamp_ntz' : False
         """
         if not data:
-            raise ValueError("can not infer schema from empty dataset")
+            raise ValueError("cannot infer schema from empty dataset")
         infer_dict_as_struct = False
         infer_array_from_first_element = False
         prefer_timestamp_ntz = False
@@ -209,7 +209,7 @@ class SparkSession:
             elif _schema_str is not None:
                 return DataFrame.withPlan(LocalRelation(table=None, schema=_schema_str), self)
             else:
-                raise ValueError("can not infer schema from empty dataset")
+                raise ValueError("cannot infer schema from empty dataset")
 
         _table: Optional[pa.Table] = None
         _inferred_schema: Optional[StructType] = None
@@ -465,7 +465,7 @@ class SparkSession:
             conf = SparkConf()
             # Do not need to worry about the existing configurations because
             # Py4J gateway is not created yet, and `conf` instance is empty here.
-            # The configurations belows are manually manipulated later to respect
+            # The configurations bellows are manually manipulated later to respect
             # the user-specified configuration first right after Py4J gateway creation.
             conf.set("spark.master", master)
             conf.set("spark.plugins", "org.apache.spark.sql.connect.SparkConnectPlugin")

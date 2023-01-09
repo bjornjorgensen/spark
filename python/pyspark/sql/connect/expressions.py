@@ -313,9 +313,9 @@ class LiteralExpression(Expression):
 
 class ColumnReference(Expression):
     """Represents a column reference. There is no guarantee that this column
-    actually exists. In the context of this project, we refer by its name and
+    exists. In the context of this project, we refer by its name and
     treat it as an unresolved attribute. Attributes that have the same fully
-    qualified name are identical"""
+    qualified names are identical"""
 
     def __init__(self, name: str) -> None:
         super().__init__()

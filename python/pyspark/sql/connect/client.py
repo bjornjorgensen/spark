@@ -430,7 +430,7 @@ class SparkConnectClient(object):
 
     def _proto_to_string(self, p: google.protobuf.message.Message) -> str:
         """
-        Helper method to generate a one line string representation of the plan.
+        Helper method to generate a one-line string representation of the plan.
         Parameters
         ----------
         p : google.protobuf.message.Message

@@ -807,7 +807,7 @@ class DataFrame:
             )
         if isinstance(value, dict):
             if len(value) == 0:
-                raise ValueError("value dict can not be empty")
+                raise ValueError("value dict cannot be empty")
             for c, v in value.items():
                 if not isinstance(c, str):
                     raise TypeError(

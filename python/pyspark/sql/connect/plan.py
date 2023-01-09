@@ -99,7 +99,7 @@ class LogicalPlan(object):
 
     def _parameters_to_print(self, parameters: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Extracts the parameters that are able to be printed. It looks up the signature
+        Extracts the parameters that can be printed. It looks up the signature
         in the constructor of this :class:`LogicalPlan`, and retrieves the variables
         from this instance by the same name (or the name with prefix `_`)  defined
         in the constructor.
@@ -166,7 +166,7 @@ class LogicalPlan(object):
                     try:
                         params[name] = getattr(self, "_" + name)
                     except AttributeError:
-                        pass  # Simpy ignore
+                        pass  # Simply ignore
         return params
 
     def print(self, indent: int = 0) -> str:

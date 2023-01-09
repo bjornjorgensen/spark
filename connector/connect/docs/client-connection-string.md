@@ -7,7 +7,7 @@ this document proposes what the user surface is for connecting to a
 Spark Connect endpoint.
 
 ## Background
-Similar to JDBC or other database connections, Spark Connect leverages a
+Like JDBC or other database connections, Spark Connect leverages a
 connection string that contains the relevant parameters that are interpreted
 to connect to the Spark Connect endpoint
 
@@ -15,11 +15,11 @@ to connect to the Spark Connect endpoint
 ## Connection String
 
 Generally, the connection string follows the standard URI definitions. The URI
-scheme is fixed and set to `sc://`. The full URI has to be a 
+scheme is fixed and set to `sc://`. The full URI must be a 
 [valid URI](http://www.faqs.org/rfcs/rfc2396.html) and must
-be parsed properly by most systems. For example, hostnames have to be valid and
-cannot contain arbitrary characters. Configuration parameter are passed in the 
-style of the HTTP URL Path Parameter Syntax. This is similar to the JDBC connection
+be parsed properly by most systems. For example, hostnames must be valid and
+cannot contain arbitrary characters. Configuration parameters are passed in the 
+style of the HTTP URL Path Parameter Syntax. This is like the JDBC connection
 strings. The path component must be empty. All parameters are interpreted **case sensitive**.
 
 ```shell
@@ -38,7 +38,7 @@ sc://hostname:port/;param1=value;param2=value
     <td>String</td>
     <td>
       The hostname of the endpoint for Spark Connect. Since the endpoint
-      has to be a fully GRPC compatible endpoint a particular path cannot
+      must be a fully GRPC compatible endpoint a particular path cannot
       be specified. The hostname must be fully qualified or can be an IP
       address as well.
     </td>
@@ -108,7 +108,7 @@ server_url = "sc://myhost.com:443/;use_ssl=true;token=ABCDEFG"
 
 As mentioned above, Spark Connect uses a regular GRPC client and the server path
 cannot be configured to remain compatible with the GRPC standard and HTTP. For
-example the following examles are invalid.
+example, the following examples are invalid.
 
 ```python
 server_url = "sc://myhost.com:443/mypathprefix/;token=AAAAAAA"
