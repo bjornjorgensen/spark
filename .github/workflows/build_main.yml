@@ -23,7 +23,8 @@ on:
   push:
     branches:
     - '**'
-
+    branches-ignore:
+      - 'main'
 jobs:
   call-build-and-test:
     permissions:
