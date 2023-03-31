@@ -23,11 +23,22 @@ on:
   push:
     branches:
     - '**'
-    branches-ignore:
-      - 'main'
+
 jobs:
   call-build-and-test:
     permissions:
       packages: write
     name: Run
-    uses: ./.github/workflows/build_and_test.yml
+    steps:
+    - name: Check if the commit is a merge commit
+      id: check_merge
+      run: |
+        IS_MERGE_COMMIT=$(git rev-parse HEAD^2 2>/dev/null)
+        if [ -n "$IS_MERGE_COMMIT" ]; then
+          echo "IS_MERGE_COMMIT=true" >> $GITHUB_ENV
+        else
+          echo "IS_MERGE_COMMIT=false" >> $GITHUB_ENV
+        fi
+    - name: Run build and test
+      if: env.IS_MERGE_COMMIT == 'false'
+      uses: ./.github/workflows/build_and_test.yml
