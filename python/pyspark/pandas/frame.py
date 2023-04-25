@@ -18,7 +18,7 @@
 """
 A wrapper class for Spark DataFrame to behave like pandas DataFrame.
 """
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, Counter
 from collections.abc import Mapping
 import re
 import warnings
@@ -12057,6 +12057,7 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
         verbose: Optional[bool] = None,
         buf: Optional[IO[str]] = None,
         max_cols: Optional[int] = None,
+        show_counts: Optional[bool] = None,
     ) -> None:
         """
         Print a concise summary of a DataFrame.
@@ -12076,6 +12077,11 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
             When to switch from the verbose to the truncated output. If the
             DataFrame has more than `max_cols` columns, the truncated output
             is used.
+        show_counts : bool, optional
+            Whether to show the non-null counts. By default, this is shown only if
+            the DataFrame is smaller than
+            pandas.options.display.max_info_rows and pandas.options.display.max_info_columns.
+            A value of True always shows the counts, and False never shows the counts.
         null_counts : bool, optional
             Whether to show the non-null counts.
 
@@ -12153,26 +12159,68 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
         """
         # To avoid pandas' existing config affects pandas-on-Spark.
         # TODO: should we have corresponding pandas-on-Spark configs?
-        with pd.option_context(
-            "display.max_info_columns", sys.maxsize, "display.max_info_rows", sys.maxsize
-        ):
-            try:
-                # hack to use pandas' info as is.
-                object.__setattr__(self, "_data", self)
-                count_func = self.count
-                self.count = (  # type: ignore[assignment]
-                    lambda: count_func()._to_pandas()  # type: ignore[assignment, misc, union-attr]
-                )
-                return pd.DataFrame.info(
-                    self,  # type: ignore[arg-type]
-                    verbose=verbose,
-                    buf=buf,
-                    max_cols=max_cols,
-                    memory_usage=False,
-                )
-            finally:
-                del self._data
-                self.count = count_func  # type: ignore[assignment]
+        # with pd.option_context(
+        #    "display.max_info_columns", sys.maxsize, "display.max_info_rows", sys.maxsize
+        # ):
+        if buf is None:
+            buf = sys.stdout
+
+        if max_cols is None:
+            max_cols = len(self.columns)
+
+        if verbose is None:
+            verbose = len(self.columns) <= max_cols
+
+        if show_counts is None:
+            show_counts = len(self) <= 1000 and len(self.columns) <= max_cols
+
+        if verbose:
+            index_type: Type = type(self.index).__name__
+            buf.write(f"<class '{self.__class__.__module__}.{self.__class__.__name__}'>\n")
+            buf.write(
+                f"{index_type}: {len(self)} entries, {self.index.min()} to {self.index.max()}\n"
+            )
+
+            # Print column header for the detailed DataFrame information
+            buf.write(f"Data columns (total {len(self.columns)} columns):\n")
+            buf.write(f" #   Column{' ' * 106}Non-Null Count  Dtype\n")
+            buf.write(f"---  ------{' ' * 106}--------------  -----\n")
+
+        # Calculate non-null counts for each column
+        non_null_counts: Dict[str, int] = dict(self.count().to_dict())
+
+        # Initialize a counter to store data type counts
+        dtype_counter: Counter = Counter()
+
+        # Iterate through the schema fields and print detailed column information
+        for idx, column in enumerate(self.columns):
+            dtype: str = str(self[column].dtype)
+            non_null_count: int = non_null_counts[column]
+            if verbose:
+                if show_counts:
+                    buf.write(f"{idx:<3} {column:<90} {non_null_count:>30} non-null {dtype}\n")
+                else:
+                    buf.write(f"{idx:<3} {column:<90} {' ' * 34} {dtype}\n")
+
+            # Update the data type counter
+            dtype_counter[dtype] += 1
+
+        if verbose:
+            # Print data type summary
+            dtypes_summary: str = ", ".join(
+                [f"{dtype}({count})" for dtype, count in dtype_counter.items()]
+            )
+            buf.write(f"\ndtypes: {dtypes_summary}\n")
+        else:
+            buf.write(f"<class '{self.__class__.__module__}.{self.__class__.__name__}'>\n")
+            buf.write(f"Index: {len(self)} entries, {self.index.min()} to {self.index.max()}\n")
+            buf.write(
+                f"Columns: {len(self.columns)} entries, {self.columns[0]} to {self.columns[-1]}\n"
+            )
+            dtypes_summary: str = ", ".join(
+                [f"{dtype}({count})" for dtype, count in dtype_counter.items()]
+            )
+            buf.write(f"dtypes: {dtypes_summary}\n")
 
     # TODO: fix parameter 'axis' and 'numeric_only' to work same as pandas'
     def quantile(
