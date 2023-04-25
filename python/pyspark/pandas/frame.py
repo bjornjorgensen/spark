@@ -12175,7 +12175,7 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
             show_counts = len(self) <= 1000 and len(self.columns) <= max_cols
 
         if verbose:
-            index_type: Type = type(self.index).__name__
+            index_type = type(self.index).__name__
             buf.write(f"<class '{self.__class__.__module__}.{self.__class__.__name__}'>\n")
             buf.write(
                 f"{index_type}: {len(self)} entries, {self.index.min()} to {self.index.max()}\n"
@@ -12187,7 +12187,10 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
             buf.write(f"---  ------{' ' * 106}--------------  -----\n")
 
         # Calculate non-null counts for each column
-        non_null_counts: Dict[str, int] = dict(self.count().to_dict())
+        non_null_counts: Mapping[str, int] = {}
+        count_series = self.count()
+        if isinstance(count_series, Series):
+            non_null_counts = count_series.to_dict()
 
         # Initialize a counter to store data type counts
         dtype_counter: Counter = Counter()
@@ -12217,10 +12220,10 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
             buf.write(
                 f"Columns: {len(self.columns)} entries, {self.columns[0]} to {self.columns[-1]}\n"
             )
-            dtypes_summary: str = ", ".join(
+            dtypes_summary_2: str = ", ".join(
                 [f"{dtype}({count})" for dtype, count in dtype_counter.items()]
             )
-            buf.write(f"dtypes: {dtypes_summary}\n")
+            buf.write(f"dtypes: {dtypes_summary_2}\n")
 
     # TODO: fix parameter 'axis' and 'numeric_only' to work same as pandas'
     def quantile(
