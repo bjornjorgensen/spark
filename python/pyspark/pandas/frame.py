@@ -12181,16 +12181,16 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
                 f"{index_type}: {len(self)} entries, {self.index.min()} to {self.index.max()}\n"
             )
 
+            # Determine the maximum column name length
+            max_column_name_length = max(len(column) for column in self.columns)
+
             # Print column header for the detailed DataFrame information
             buf.write(f"Data columns (total {len(self.columns)} columns):\n")
-            buf.write(f" #   Column{' ' * 106}Non-Null Count  Dtype\n")
-            buf.write(f"---  ------{' ' * 106}--------------  -----\n")
+            buf.write(f" #   Column{' ' * (max_column_name_length - 5)}  Non-Null Count  Dtype\n")
+            buf.write(f"---  ------{' ' * (max_column_name_length - 5)}  --------------  -----\n")
 
         # Calculate non-null counts for each column
-        non_null_counts: Mapping[str, int] = {}
-        count_series = self.count()
-        if isinstance(count_series, Series):
-            non_null_counts = count_series.to_dict()
+        non_null_counts: Dict[str, int] = dict(self.count().to_dict())
 
         # Initialize a counter to store data type counts
         dtype_counter: Counter = Counter()
@@ -12201,9 +12201,9 @@ defaultdict(<class 'list'>, {'col..., 'col...})]
             non_null_count: int = non_null_counts[column]
             if verbose:
                 if show_counts:
-                    buf.write(f"{idx:<3} {column:<90} {non_null_count:>30} non-null {dtype}\n")
+                    buf.write(f"{idx:<3} {column:<{max_column_name_length}}  {non_null_count:>4} non-null      {dtype:<}\n")
                 else:
-                    buf.write(f"{idx:<3} {column:<90} {' ' * 34} {dtype}\n")
+                    buf.write(f"{idx:<3} {column:<{max_column_name_length}}  {' ' * 14} {dtype:<}\n")
 
             # Update the data type counter
             dtype_counter[dtype] += 1
