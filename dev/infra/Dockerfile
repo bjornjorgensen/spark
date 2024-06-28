@@ -17,7 +17,7 @@
 
 # Image for building and testing Spark branches. Based on Ubuntu 22.04.
 # See also in https://hub.docker.com/_/ubuntu
-FROM ubuntu:jammy-20240227
+FROM ubuntu:jammy-20240530
 
 ENV FULL_REFRESH_DATE 20240318
 
