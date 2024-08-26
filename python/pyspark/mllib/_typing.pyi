@@ -16,7 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from typing import List, Tuple, TypeVar, Union
+from typing import Tuple, TypeVar, Union
+import list
 
 from typing_extensions import Literal
 from numpy import ndarray  # noqa: F401
@@ -24,7 +25,7 @@ from py4j.java_gateway import JavaObject
 
 from pyspark.mllib.linalg import Vector
 
-VectorLike = Union[ndarray, Vector, List[float], Tuple[float, ...]]
+VectorLike = Union[ndarray, Vector, list[float], Tuple[float, ...]]
 C = TypeVar("C", bound=type)
 JavaObjectOrPickleDump = Union[JavaObject, bytearray, bytes]
 

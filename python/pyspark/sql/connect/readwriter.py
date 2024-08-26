@@ -18,8 +18,8 @@ from pyspark.sql.connect.utils import check_dependencies
 
 check_dependencies(__name__)
 
-from typing import Dict
-from typing import Optional, Union, List, overload, Tuple, cast, Callable
+import dict, list, tuple
+from typing import Optional, Union, overload, cast, Callable
 from typing import TYPE_CHECKING
 
 from pyspark.sql.connect.plan import Read, DataSource, LogicalPlan, WriteOperation, WriteOperationV2
@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 
 __all__ = ["DataFrameReader", "DataFrameWriter"]
 
-PathOrPaths = Union[str, List[str]]
-TupleOrListOfString = Union[List[str], Tuple[str, ...]]
+PathOrPaths = Union[str, list[str]]
+TupleOrListOfString = Union[list[str], tuple[str, ...]]
 
 
 class OptionUtils:
@@ -68,7 +68,7 @@ class DataFrameReader(OptionUtils):
         self._client = client
         self._format: Optional[str] = None
         self._schema = ""
-        self._options: Dict[str, str] = {}
+        self._options: dict[str, str] = {}
 
     def format(self, source: str) -> "DataFrameReader":
         self._format = source
@@ -402,7 +402,7 @@ class DataFrameReader(OptionUtils):
 
     @overload
     def jdbc(
-        self, url: str, table: str, *, properties: Optional[Dict[str, str]] = None
+        self, url: str, table: str, *, properties: Optional[dict[str, str]] = None
     ) -> "DataFrame":
         ...
 
@@ -416,7 +416,7 @@ class DataFrameReader(OptionUtils):
         upperBound: Union[int, str],
         numPartitions: int,
         *,
-        properties: Optional[Dict[str, str]] = None,
+        properties: Optional[dict[str, str]] = None,
     ) -> "DataFrame":
         ...
 
@@ -426,8 +426,8 @@ class DataFrameReader(OptionUtils):
         url: str,
         table: str,
         *,
-        predicates: List[str],
-        properties: Optional[Dict[str, str]] = None,
+        predicates: list[str],
+        properties: Optional[dict[str, str]] = None,
     ) -> "DataFrame":
         ...
 
@@ -440,7 +440,7 @@ class DataFrameReader(OptionUtils):
         upperBound: Optional[Union[int, str]] = None,
         numPartitions: Optional[int] = None,
         predicates: Optional[List[str]] = None,
-        properties: Optional[Dict[str, str]] = None,
+        properties: Optional[dict[str, str]] = None,
     ) -> "DataFrame":
         if properties is None:
             properties = dict()
@@ -534,14 +534,14 @@ class DataFrameWriter(OptionUtils):
         ...
 
     @overload
-    def partitionBy(self, *cols: List[str]) -> "DataFrameWriter":
+    def partitionBy(self, *cols: list[str]) -> "DataFrameWriter":
         ...
 
-    def partitionBy(self, *cols: Union[str, List[str]]) -> "DataFrameWriter":
+    def partitionBy(self, *cols: Union[str, list[str]]) -> "DataFrameWriter":
         if len(cols) == 1 and isinstance(cols[0], (list, tuple)):
             cols = cols[0]  # type: ignore[assignment]
 
-        self._write.partitioning_cols = cast(List[str], cols)
+        self._write.partitioning_cols = cast(list[str], cols)
         return self
 
     partitionBy.__doc__ = PySparkDataFrameWriter.partitionBy.__doc__
@@ -595,7 +595,7 @@ class DataFrameWriter(OptionUtils):
             )
 
         self._write.num_buckets = numBuckets
-        self._write.bucket_cols = cast(List[str], [col, *cols])
+        self._write.bucket_cols = cast(list[str], [col, *cols])
         return self
 
     bucketBy.__doc__ = PySparkDataFrameWriter.bucketBy.__doc__
@@ -640,7 +640,7 @@ class DataFrameWriter(OptionUtils):
                 },
             )
 
-        self._write.sort_cols = cast(List[str], [col, *cols])
+        self._write.sort_cols = cast(list[str], [col, *cols])
         return self
 
     sortBy.__doc__ = PySparkDataFrameWriter.sortBy.__doc__
@@ -650,14 +650,14 @@ class DataFrameWriter(OptionUtils):
         ...
 
     @overload
-    def clusterBy(self, *cols: List[str]) -> "DataFrameWriter":
+    def clusterBy(self, *cols: list[str]) -> "DataFrameWriter":
         ...
 
-    def clusterBy(self, *cols: Union[str, List[str]]) -> "DataFrameWriter":
+    def clusterBy(self, *cols: Union[str, list[str]]) -> "DataFrameWriter":
         if len(cols) == 1 and isinstance(cols[0], (list, tuple)):
             cols = cols[0]  # type: ignore[assignment]
         assert len(cols) > 0, "clusterBy needs one or more clustering columns."
-        self._write.clustering_cols = cast(List[str], cols)
+        self._write.clustering_cols = cast(list[str], cols)
         return self
 
     clusterBy.__doc__ = PySparkDataFrameWriter.clusterBy.__doc__
@@ -667,7 +667,7 @@ class DataFrameWriter(OptionUtils):
         path: Optional[str] = None,
         format: Optional[str] = None,
         mode: Optional[str] = None,
-        partitionBy: Optional[Union[str, List[str]]] = None,
+        partitionBy: Optional[Union[str, list[str]]] = None,
         **options: "OptionalPrimitiveType",
     ) -> None:
         self.mode(mode).options(**options)
@@ -700,7 +700,7 @@ class DataFrameWriter(OptionUtils):
         name: str,
         format: Optional[str] = None,
         mode: Optional[str] = None,
-        partitionBy: Optional[Union[str, List[str]]] = None,
+        partitionBy: Optional[Union[str, list[str]]] = None,
         **options: "OptionalPrimitiveType",
     ) -> None:
         self.mode(mode).options(**options)
@@ -745,7 +745,7 @@ class DataFrameWriter(OptionUtils):
         self,
         path: str,
         mode: Optional[str] = None,
-        partitionBy: Optional[Union[str, List[str]]] = None,
+        partitionBy: Optional[Union[str, list[str]]] = None,
         compression: Optional[str] = None,
     ) -> None:
         self.mode(mode)
@@ -848,7 +848,7 @@ class DataFrameWriter(OptionUtils):
         self,
         path: str,
         mode: Optional[str] = None,
-        partitionBy: Optional[Union[str, List[str]]] = None,
+        partitionBy: Optional[Union[str, list[str]]] = None,
         compression: Optional[str] = None,
     ) -> None:
         self.mode(mode)
@@ -864,7 +864,7 @@ class DataFrameWriter(OptionUtils):
         url: str,
         table: str,
         mode: Optional[str] = None,
-        properties: Optional[Dict[str, str]] = None,
+        properties: Optional[dict[str, str]] = None,
     ) -> None:
         if properties is None:
             properties = dict()

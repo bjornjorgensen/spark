@@ -38,14 +38,14 @@
 import datetime
 import os
 import sys
-from typing import List, Tuple
+import list, tuple
 
 from pyspark import SparkContext, Accumulator, Broadcast, RDD
 from pyspark.streaming import StreamingContext
 
 
 # Get or register a Broadcast variable
-def getWordExcludeList(sparkContext: SparkContext) -> Broadcast[List[str]]:
+def getWordExcludeList(sparkContext: SparkContext) -> Broadcast[list[str]]:
     if ('wordExcludeList' not in globals()):
         globals()['wordExcludeList'] = sparkContext.broadcast(["a", "b", "c"])
     return globals()['wordExcludeList']
@@ -73,14 +73,14 @@ def createContext(host: str, port: int, outputPath: str) -> StreamingContext:
     words = lines.flatMap(lambda line: line.split(" "))
     wordCounts = words.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y)
 
-    def echo(time: datetime.datetime, rdd: RDD[Tuple[str, int]]) -> None:
+    def echo(time: datetime.datetime, rdd: RDD[tuple[str, int]]) -> None:
         # Get or register the excludeList Broadcast
         excludeList = getWordExcludeList(rdd.context)
         # Get or register the droppedWordsCounter Accumulator
         droppedWordsCounter = getDroppedWordsCounter(rdd.context)
 
         # Use excludeList to drop words and use droppedWordsCounter to count them
-        def filterFunc(wordCount: Tuple[str, int]) -> bool:
+        def filterFunc(wordCount: tuple[str, int]) -> bool:
             if wordCount[0] in excludeList.value:
                 droppedWordsCounter.add(wordCount[1])
                 return False

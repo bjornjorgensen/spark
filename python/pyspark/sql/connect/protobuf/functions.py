@@ -23,7 +23,8 @@ from pyspark.sql.connect.utils import check_dependencies
 
 check_dependencies(__name__)
 
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+import dict
 
 from pyspark.sql.protobuf import functions as PyProtobufFunctions
 
@@ -38,7 +39,7 @@ def from_protobuf(
     data: "ColumnOrName",
     messageName: str,
     descFilePath: Optional[str] = None,
-    options: Optional[Dict[str, str]] = None,
+    options: Optional[dict[str, str]] = None,
     binaryDescriptorSet: Optional[bytes] = None,
 ) -> Column:
     binary_proto = None
@@ -77,7 +78,7 @@ def to_protobuf(
     data: "ColumnOrName",
     messageName: str,
     descFilePath: Optional[str] = None,
-    options: Optional[Dict[str, str]] = None,
+    options: Optional[dict[str, str]] = None,
     binaryDescriptorSet: Optional[bytes] = None,
 ) -> Column:
     binary_proto = None

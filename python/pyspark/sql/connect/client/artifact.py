@@ -27,7 +27,8 @@ import sys
 import os
 import zlib
 from itertools import chain
-from typing import List, Iterable, BinaryIO, Iterator, Optional, Tuple
+from typing import Iterable, BinaryIO, Iterator, Optional
+import list, tuple
 import abc
 from pathlib import Path
 from urllib.parse import urlparse
@@ -172,7 +173,7 @@ class ArtifactManager:
         user_id: Optional[str],
         session_id: str,
         channel: grpc.Channel,
-        metadata: Iterable[Tuple[str, str]],
+        metadata: Iterable[tuple[str, str]],
     ):
         self._user_context = proto.UserContext()
         if user_id is not None:
@@ -183,7 +184,7 @@ class ArtifactManager:
 
     def _parse_artifacts(
         self, path_or_uri: str, pyfile: bool, archive: bool, file: bool
-    ) -> List[Artifact]:
+    ) -> list[Artifact]:
         # Currently only local files with .jar extension is supported.
         parsed = urlparse(path_or_uri)
         # Check if it is a file from the scheme
@@ -243,7 +244,7 @@ class ArtifactManager:
             messageParameters={"operation": f"{parsed.scheme} scheme"},
         )
 
-    def _parse_forward_to_fs_artifacts(self, local_path: str, dest_path: str) -> List[Artifact]:
+    def _parse_forward_to_fs_artifacts(self, local_path: str, dest_path: str) -> list[Artifact]:
         abs_path: Path = Path(local_path).absolute()
         # TODO: Support directory path.
         assert abs_path.is_file(), "local path must be a file path."
@@ -286,7 +287,7 @@ class ArtifactManager:
 
     def _request_add_artifacts(self, requests: Iterator[proto.AddArtifactsRequest]) -> None:
         response: proto.AddArtifactsResponse = self._retrieve_responses(requests)
-        summaries: List[proto.AddArtifactsResponse.ArtifactSummary] = []
+        summaries: list[proto.AddArtifactsResponse.ArtifactSummary] = []
 
         for summary in response.artifacts:
             summaries.append(summary)
@@ -314,7 +315,7 @@ class ArtifactManager:
         Add a number of artifacts to the session.
         """
 
-        current_batch: List[Artifact] = []
+        current_batch: list[Artifact] = []
         current_batch_size = 0
 
         def add_to_batch(dep: Artifact, size: int) -> None:
@@ -435,7 +436,7 @@ class ArtifactManager:
         if not self.is_cached_artifact(hash):
             requests = self._add_artifacts([new_cache_artifact(hash, InMemory(blob))])
             response: proto.AddArtifactsResponse = self._retrieve_responses(requests)
-            summaries: List[proto.AddArtifactsResponse.ArtifactSummary] = []
+            summaries: list[proto.AddArtifactsResponse.ArtifactSummary] = []
 
             for summary in response.artifacts:
                 summaries.append(summary)

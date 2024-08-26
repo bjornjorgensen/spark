@@ -31,14 +31,14 @@ r"""
 """
 
 import sys
-from typing import Tuple
+import tuple
 
 from pyspark import SparkContext
 from pyspark import RDD
 from pyspark.streaming import DStream, StreamingContext
 
 
-def print_happiest_words(rdd: RDD[Tuple[float, str]]) -> None:
+def print_happiest_words(rdd: RDD[tuple[float, str]]) -> None:
     top_list = rdd.take(5)
     print("Happiest topics in the last 5 seconds (%d total):" % rdd.count())
     for tuple in top_list:
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     sc = SparkContext(appName="PythonStreamingNetworkWordJoinSentiments")
     ssc = StreamingContext(sc, 5)
 
-    def line_to_tuple(line: str) -> Tuple[str, str]:
+    def line_to_tuple(line: str) -> tuple[str, str]:
         try:
             k, v = line.split(" ")
             return k, v
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # Determine the words with the highest sentiment values by joining the streaming RDD
     # with the static RDD inside the transform() method and then multiplying
     # the frequency of the words by its sentiment value
-    happiest_words: DStream[Tuple[float, str]] = word_counts \
+    happiest_words: DStream[tuple[float, str]] = word_counts \
         .transform(lambda rdd: word_sentiments.join(rdd)) \
         .map(lambda word_tuples: (word_tuples[0], float(word_tuples[1][0]) * word_tuples[1][1])) \
         .map(lambda word_happiness: (word_happiness[1], word_happiness[0])) \

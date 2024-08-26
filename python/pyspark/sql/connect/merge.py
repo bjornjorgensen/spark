@@ -16,7 +16,8 @@
 #
 
 import sys
-from typing import Dict, Optional, TYPE_CHECKING, List, Callable
+from typing import Optional, TYPE_CHECKING, Callable
+import dict, list
 
 from pyspark.sql.connect import proto
 from pyspark.sql.connect.column import Column
@@ -36,7 +37,7 @@ def _build_merge_action(
     client: "SparkConnectClient",
     action_type: proto.MergeAction.ActionType.ValueType,
     condition: Optional[Column] = None,
-    assignments: Optional[Dict[str, Column]] = None,
+    assignments: Optional[dict[str, Column]] = None,
 ) -> proto.MergeAction:
     if assignments is None:
         proto_assignments = None
@@ -70,9 +71,9 @@ class MergeIntoWriter:
 
         self._callback = callback if callback is not None else lambda _: None
         self._schema_evolution_enabled = False
-        self._matched_actions = list()  # type: List[proto.MergeAction]
-        self._not_matched_actions = list()  # type: List[proto.MergeAction]
-        self._not_matched_by_source_actions = list()  # type: List[proto.MergeAction]
+        self._matched_actions = list()  # type: list[proto.MergeAction]
+        self._not_matched_actions = list()  # type: list[proto.MergeAction]
+        self._not_matched_by_source_actions = list()  # type: list[proto.MergeAction]
 
     def whenMatched(self, condition: Optional[Column] = None) -> "MergeIntoWriter.WhenMatched":
         return self.WhenMatched(self, condition)
@@ -133,7 +134,7 @@ class MergeIntoWriter:
 
         updateAll.__doc__ = PySparkMergeIntoWriter.WhenMatched.updateAll.__doc__
 
-        def update(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def update(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             action = _build_merge_action(
                 self.writer._client,
                 proto.MergeAction.ACTION_TYPE_UPDATE,
@@ -170,7 +171,7 @@ class MergeIntoWriter:
 
         insertAll.__doc__ = PySparkMergeIntoWriter.WhenNotMatched.insertAll.__doc__
 
-        def insert(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def insert(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             action = _build_merge_action(
                 self.writer._client,
                 proto.MergeAction.ACTION_TYPE_INSERT,
@@ -198,7 +199,7 @@ class MergeIntoWriter:
 
         updateAll.__doc__ = PySparkMergeIntoWriter.WhenNotMatchedBySource.updateAll.__doc__
 
-        def update(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def update(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             action = _build_merge_action(
                 self.writer._client,
                 proto.MergeAction.ACTION_TYPE_UPDATE,

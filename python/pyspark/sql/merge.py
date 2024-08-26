@@ -15,7 +15,8 @@
 # limitations under the License.
 #
 import sys
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+import dict
 
 from pyspark.sql.column import Column
 from pyspark.sql.utils import to_scala_map
@@ -50,7 +51,7 @@ class MergeIntoWriter:
 
         This `WhenMatched` can be followed by one of the following merge actions:
           - `updateAll`: Update all the matched target table rows with source dataset rows.
-          - `update(Dict)`: Update all the matched target table rows while changing only
+          - `update(dict)`: Update all the matched target table rows while changing only
             a subset of columns based on the provided assignment.
           - `delete`: Delete all target rows that have a match in the source table.
         """
@@ -67,7 +68,7 @@ class MergeIntoWriter:
 
         This `WhenNotMatched` can be followed by one of the following merge actions:
           - `insertAll`: Insert all rows from the source that are not already in the target table.
-          - `insert(Dict)`: Insert all rows from the source that are not already in the target
+          - `insert(dict)`: Insert all rows from the source that are not already in the target
             table, with the specified columns based on the provided assignment.
         """
         return self.WhenNotMatched(self, condition)
@@ -84,7 +85,7 @@ class MergeIntoWriter:
 
         This `WhenNotMatchedBySource` can be followed by one of the following merge actions:
           - `updateAll`: Update all the not matched target table rows with source dataset rows.
-          - `update(Dict)`: Update all the not matched target table rows while changing only
+          - `update(dict)`: Update all the not matched target table rows while changing only
             the specified columns based on the provided assignment.
           - `delete`: Delete all target rows that have no matches in the source table.
         """
@@ -124,7 +125,7 @@ class MergeIntoWriter:
             self.writer._jwriter = self.when_matched.updateAll()
             return self.writer
 
-        def update(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def update(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             """
             Specifies an action to update matched rows in the DataFrame with the provided column
             assignments.
@@ -164,7 +165,7 @@ class MergeIntoWriter:
             self.writer._jwriter = self.when_not_matched.insertAll()
             return self.writer
 
-        def insert(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def insert(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             """
             Specifies an action to insert non-matched rows into the DataFrame with the provided
             column assignments.
@@ -201,7 +202,7 @@ class MergeIntoWriter:
             self.writer._jwriter = self.when_not_matched_by_source.updateAll()
             return self.writer
 
-        def update(self, assignments: Dict[str, Column]) -> "MergeIntoWriter":
+        def update(self, assignments: dict[str, Column]) -> "MergeIntoWriter":
             """
             Specifies an action to update non-matched rows in the target DataFrame with the provided
             column assignments when not matched by the source.

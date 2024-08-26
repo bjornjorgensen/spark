@@ -18,8 +18,8 @@
 __all__ = ["SparkConf"]
 
 import sys
-from typing import Dict, List, Optional, Tuple, cast, overload, TYPE_CHECKING
-
+from typing import Optional, cast, overload, TYPE_CHECKING
+import dict, list, tuple
 from pyspark.util import is_remote_only
 from pyspark.errors import PySparkRuntimeError
 
@@ -111,7 +111,7 @@ class SparkConf:
     """
 
     _jconf: Optional["JavaObject"]
-    _conf: Optional[Dict[str, str]]
+    _conf: Optional[dict[str, str]]
 
     def __init__(
         self,
@@ -176,14 +176,14 @@ class SparkConf:
         ...
 
     @overload
-    def setExecutorEnv(self, *, pairs: List[Tuple[str, str]]) -> "SparkConf":
+    def setExecutorEnv(self, *, pairs: list[tuple[str, str]]) -> "SparkConf":
         ...
 
     def setExecutorEnv(
         self,
         key: Optional[str] = None,
         value: Optional[str] = None,
-        pairs: Optional[List[Tuple[str, str]]] = None,
+        pairs: Optional[list[tuple[str, str]]] = None,
     ) -> "SparkConf":
         """Set an environment variable to be passed to executors."""
         if (key is not None and pairs is not None) or (key is None and pairs is None):
@@ -198,7 +198,7 @@ class SparkConf:
                 self.set("spark.executorEnv.{}".format(k), v)
         return self
 
-    def setAll(self, pairs: List[Tuple[str, str]]) -> "SparkConf":
+    def setAll(self, pairs: list[tuple[str, str]]) -> "SparkConf":
         """
         Set multiple parameters, passed as a list of key-value pairs.
 
@@ -240,7 +240,7 @@ class SparkConf:
                 assert self._conf is not None
                 return self._conf.get(key, defaultValue)
 
-    def getAll(self) -> List[Tuple[str, str]]:
+    def getAll(self) -> list[tuple[str, str]]:
         """Get all values as a list of key-value pairs."""
         if self._jconf is not None:
             from py4j.java_gateway import JavaObject

@@ -19,8 +19,8 @@
 
 import copy
 import math
-from typing import Dict, Iterable, Optional
-
+from typing import Iterable, Optional
+import dict
 try:
     from numpy import maximum, minimum, sqrt
 except ImportError:
@@ -131,7 +131,7 @@ class StatCounter:
     def sampleStdev(self) -> float:
         return sqrt(self.sampleVariance())
 
-    def asDict(self, sample: bool = False) -> Dict[str, float]:
+    def asDict(self, sample: bool = False) -> dict[str, float]:
         """Returns the :class:`StatCounter` members as a ``dict``.
 
         Examples

@@ -20,7 +20,8 @@ A collections of builtin avro functions
 """
 
 
-from typing import Dict, Optional, TYPE_CHECKING, cast
+from typing import Optional, TYPE_CHECKING, cast
+import dict
 
 from pyspark.errors import PySparkTypeError
 from pyspark.sql.column import Column
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 
 @try_remote_avro_functions
 def from_avro(
-    data: "ColumnOrName", jsonFormatSchema: str, options: Optional[Dict[str, str]] = None
+    data: "ColumnOrName", jsonFormatSchema: str, options: Optional[dict[str, str]] = None
 ) -> Column:
     """
     Converts a binary column of Avro format into its corresponding catalyst value.

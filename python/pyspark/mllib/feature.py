@@ -20,7 +20,8 @@ Python package for feature in MLlib.
 """
 import sys
 import warnings
-from typing import Dict, Hashable, Iterable, List, Optional, Tuple, Union, overload, TYPE_CHECKING
+from typing import Hashable, Iterable, Optional, Union, overload, TYPE_CHECKING
+import dict, list, tuple
 
 from py4j.protocol import Py4JJavaError
 
@@ -647,7 +648,7 @@ class HashingTF:
         if isinstance(document, RDD):
             return document.map(self.transform)
 
-        freq: Dict[int, float] = {}
+        freq: dict[int, float] = {}
         for term in document:
             i = self.indexOf(term)
             freq[i] = 1.0 if self.binary else freq.get(i, 0) + 1.0
@@ -706,7 +707,7 @@ class IDFModel(JavaVectorTransformer):
         return self.call("idf")
 
     @since("3.0.0")
-    def docFreq(self) -> List[int]:
+    def docFreq(self) -> list[int]:
         """
         Returns the document frequency.
         """
@@ -812,7 +813,7 @@ class Word2VecModel(JavaVectorTransformer, JavaSaveable, JavaLoader["Word2VecMod
         except Py4JJavaError:
             raise ValueError("%s not found" % word)
 
-    def findSynonyms(self, word: Union[str, "VectorLike"], num: int) -> Iterable[Tuple[str, float]]:
+    def findSynonyms(self, word: Union[str, "VectorLike"], num: int) -> Iterable[tuple[str, float]]:
         """
         Find synonyms of a word
 
@@ -988,7 +989,7 @@ class Word2Vec:
         self.windowSize = windowSize
         return self
 
-    def fit(self, data: RDD[List[str]]) -> "Word2VecModel":
+    def fit(self, data: RDD[list[str]]) -> "Word2VecModel":
         """
         Computes the vector representation of each word in vocabulary.
 

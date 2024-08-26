@@ -16,7 +16,8 @@
 #
 import datetime
 import json
-from typing import Tuple, Optional
+from typing import Optional
+import tuple 
 
 from pyspark.sql.types import Row, StructType, TimestampType
 from pyspark.sql.utils import has_numpy
@@ -92,7 +93,7 @@ class GroupState:
         return self._defined
 
     @property
-    def get(self) -> Tuple:
+    def get(self) -> tuple:
         """
         Get the state value if it exists, or throw ValueError.
         """
@@ -105,7 +106,7 @@ class GroupState:
             )
 
     @property
-    def getOption(self) -> Optional[Tuple]:
+    def getOption(self) -> Optional[tuple]:
         """
         Get the state value if it exists, or return None.
         """
@@ -128,7 +129,7 @@ class GroupState:
     def oldTimeoutTimestamp(self) -> int:
         return self._old_timeout_timestamp
 
-    def update(self, newValue: Tuple) -> None:
+    def update(self, newValue: tuple) -> None:
         """
         Update the value of the state. The value of the state cannot be null.
         """

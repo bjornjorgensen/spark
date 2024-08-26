@@ -23,7 +23,9 @@ from pyspark.mllib.common import callMLlibFunc, inherit_doc, JavaModelWrapper
 from pyspark.mllib.linalg import _convert_to_vector
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.util import JavaLoader, JavaSaveable
-from typing import Dict, Optional, Tuple, Union, overload, TYPE_CHECKING
+from typing import Optional, Union, overload, TYPE_CHECKING
+import dict, tuple
+
 from pyspark.core.rdd import RDD
 
 if TYPE_CHECKING:
@@ -177,7 +179,7 @@ class DecisionTree:
         data: RDD[LabeledPoint],
         type: str,
         numClasses: int,
-        features: Dict[int, int],
+        features: dict[int, int],
         impurity: str = "gini",
         maxDepth: int = 5,
         maxBins: int = 32,
@@ -205,7 +207,7 @@ class DecisionTree:
         cls,
         data: RDD[LabeledPoint],
         numClasses: int,
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         impurity: str = "gini",
         maxDepth: int = 5,
         maxBins: int = 32,
@@ -298,7 +300,7 @@ class DecisionTree:
     def trainRegressor(
         cls,
         data: RDD[LabeledPoint],
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         impurity: str = "variance",
         maxDepth: int = 5,
         maxBins: int = 32,
@@ -395,7 +397,7 @@ class RandomForest:
     .. versionadded:: 1.2.0
     """
 
-    supportedFeatureSubsetStrategies: Tuple[str, ...] = ("auto", "all", "sqrt", "log2", "onethird")
+    supportedFeatureSubsetStrategies: tuple[str, ...] = ("auto", "all", "sqrt", "log2", "onethird")
 
     @classmethod
     def _train(
@@ -403,7 +405,7 @@ class RandomForest:
         data: RDD[LabeledPoint],
         algo: str,
         numClasses: int,
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         numTrees: int,
         featureSubsetStrategy: str,
         impurity: str,
@@ -437,7 +439,7 @@ class RandomForest:
         cls,
         data: RDD[LabeledPoint],
         numClasses: int,
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         numTrees: int,
         featureSubsetStrategy: str = "auto",
         impurity: str = "gini",
@@ -549,7 +551,7 @@ class RandomForest:
     def trainRegressor(
         cls,
         data: RDD[LabeledPoint],
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         numTrees: int,
         featureSubsetStrategy: str = "auto",
         impurity: str = "variance",
@@ -668,7 +670,7 @@ class GradientBoostedTrees:
         cls,
         data: RDD[LabeledPoint],
         algo: str,
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         loss: str,
         numIterations: int,
         learningRate: float,
@@ -694,7 +696,7 @@ class GradientBoostedTrees:
     def trainClassifier(
         cls,
         data: RDD[LabeledPoint],
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         loss: str = "logLoss",
         numIterations: int = 100,
         learningRate: float = 0.1,
@@ -783,7 +785,7 @@ class GradientBoostedTrees:
     def trainRegressor(
         cls,
         data: RDD[LabeledPoint],
-        categoricalFeaturesInfo: Dict[int, int],
+        categoricalFeaturesInfo: dict[int, int],
         loss: str = "leastSquaresError",
         numIterations: int = 100,
         learningRate: float = 0.1,

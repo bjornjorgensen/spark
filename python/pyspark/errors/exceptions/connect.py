@@ -16,7 +16,8 @@
 #
 import pyspark.sql.connect.proto as pb2
 import json
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+import dict, list
 
 from pyspark.errors.exceptions.base import (
     AnalysisException as BaseAnalysisException,
@@ -58,7 +59,7 @@ def convert_exception(
     sql_state = None
     errorClass = None
     messageParameters = None
-    contexts: Optional[List[BaseQueryContext]] = None
+    contexts: Optional[list[BaseQueryContext]] = None
 
     if "classes" in info.metadata:
         classes = json.loads(info.metadata["classes"])
@@ -260,7 +261,7 @@ def _extract_jvm_stacktrace(resp: pb2.FetchErrorDetailsResponse) -> str:
     if len(resp.errors[resp.root_error_idx].stack_trace) == 0:
         return ""
 
-    lines: List[str] = []
+    lines: list[str] = []
 
     def format_stacktrace(error: pb2.FetchErrorDetailsResponse.Error) -> None:
         message = f"{error.error_type_hierarchy[0]}: {error.message}"
@@ -292,12 +293,12 @@ class SparkConnectGrpcException(SparkConnectException):
         self,
         message: Optional[str] = None,
         errorClass: Optional[str] = None,
-        messageParameters: Optional[Dict[str, str]] = None,
+        messageParameters: Optional[dict[str, str]] = None,
         reason: Optional[str] = None,
         sql_state: Optional[str] = None,
         server_stacktrace: Optional[str] = None,
         display_server_stacktrace: bool = False,
-        contexts: Optional[List[BaseQueryContext]] = None,
+        contexts: Optional[list[BaseQueryContext]] = None,
     ) -> None:
         if contexts is None:
             contexts = []
@@ -324,7 +325,7 @@ class SparkConnectGrpcException(SparkConnectException):
         self._sql_state: Optional[str] = sql_state
         self._stacktrace: Optional[str] = server_stacktrace
         self._display_stacktrace: bool = display_server_stacktrace
-        self._contexts: List[BaseQueryContext] = contexts
+        self._contexts: list[BaseQueryContext] = contexts
         self._log_exception()
 
     def getSqlState(self) -> Optional[str]:

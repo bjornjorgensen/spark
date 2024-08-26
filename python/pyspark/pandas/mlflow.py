@@ -18,8 +18,9 @@
 """
 MLflow-related functions to load models and apply them to pandas-on-Spark dataframes.
 """
-from typing import List, Union
+from typing import Union
 from typing import Any
+import list
 
 import pandas as pd
 import numpy as np
@@ -96,7 +97,7 @@ class PythonModelWrapper:
         elif isinstance(data, DataFrame):
             s = struct(*data.columns)
             return_col = self._model_udf(s)
-            column_labels: List[Label] = [
+            column_labels: list[Label] = [
                 (col,) for col in data._internal.spark_frame.select(return_col).columns
             ]
             internal = data._internal.copy(

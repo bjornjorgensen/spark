@@ -19,7 +19,7 @@ import sys
 import unittest
 import datetime
 import decimal
-from typing import List
+import list
 
 import pandas
 import pandas as pd
@@ -355,9 +355,9 @@ class TypeHintTestsMixin:
                 # Nested CategoricalDtype is not yet supported.
                 continue
 
-            self.assertEqual(as_spark_type(List[numpy_or_python_type]), ArrayType(spark_type))
+            self.assertEqual(as_spark_type(list[numpy_or_python_type]), ArrayType(spark_type))
             self.assertEqual(
-                pandas_on_spark_type(List[numpy_or_python_type]),
+                pandas_on_spark_type(list[numpy_or_python_type]),
                 (np.dtype("object"), ArrayType(spark_type)),
             )
 

@@ -264,11 +264,11 @@ class SparkConnectPlanTests(PlanOnlyTestFixture):
 
     def test_random_split(self):
         # SPARK-41440: test randomSplit(weights, seed).
-        from typing import List
+        import list
 
         df = self.connect.readTable(table_name=self.tbl_name)
 
-        def checkRelations(relations: List["DataFrame"]):
+        def checkRelations(relations: list["DataFrame"]):
             self.assertTrue(len(relations) == 3)
 
             plan = relations[0]._plan.to_proto(self.connect)

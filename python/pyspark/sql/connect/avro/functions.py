@@ -24,7 +24,8 @@ from pyspark.sql.connect.utils import check_dependencies
 
 check_dependencies(__name__)
 
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
+import dict
 
 from pyspark.sql.avro import functions as PyAvroFunctions
 from pyspark.sql.column import Column
@@ -35,7 +36,7 @@ if TYPE_CHECKING:
 
 
 def from_avro(
-    data: "ColumnOrName", jsonFormatSchema: str, options: Optional[Dict[str, str]] = None
+    data: "ColumnOrName", jsonFormatSchema: str, options: Optional[dict[str, str]] = None
 ) -> Column:
     if not isinstance(data, (Column, str)):
         raise PySparkTypeError(

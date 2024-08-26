@@ -16,7 +16,8 @@
 #
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Dict, Optional, cast, Iterable, TYPE_CHECKING, List
+from typing import Optional, cast, Iterable, TYPE_CHECKING
+import dict, list
 
 from pyspark.errors.utils import ErrorClassesReader
 from pyspark.logger import PySparkLogger
@@ -35,8 +36,8 @@ class PySparkException(Exception):
         self,
         message: Optional[str] = None,
         errorClass: Optional[str] = None,
-        messageParameters: Optional[Dict[str, str]] = None,
-        contexts: Optional[List["QueryContext"]] = None,
+        messageParameters: Optional[dict[str, str]] = None,
+        contexts: Optional[list["QueryContext"]] = None,
     ):
         if contexts is None:
             contexts = []
@@ -44,7 +45,7 @@ class PySparkException(Exception):
 
         if message is None:
             self._message = self._error_reader.get_error_message(
-                cast(str, errorClass), cast(Dict[str, str], messageParameters)
+                cast(str, errorClass), cast(dict[str, str], messageParameters)
             )
         else:
             self._message = message
@@ -68,7 +69,7 @@ class PySparkException(Exception):
         """
         return self._errorClass
 
-    def getMessageParameters(self) -> Optional[Dict[str, str]]:
+    def getMessageParameters(self) -> Optional[dict[str, str]]:
         """
         Returns a message parameters as a dictionary.
 
@@ -115,7 +116,7 @@ class PySparkException(Exception):
         """
         return f"[{self.getErrorClass()}] {self._message}"
 
-    def getQueryContext(self) -> List["QueryContext"]:
+    def getQueryContext(self) -> list["QueryContext"]:
         """
         Returns :class:`QueryContext`.
 
@@ -300,7 +301,7 @@ class PySparkAssertionError(PySparkException, AssertionError):
         self,
         message: Optional[str] = None,
         errorClass: Optional[str] = None,
-        messageParameters: Optional[Dict[str, str]] = None,
+        messageParameters: Optional[dict[str, str]] = None,
         data: Optional[Iterable["Row"]] = None,
     ):
         super().__init__(message, errorClass, messageParameters)

@@ -19,7 +19,8 @@ import inspect
 import os
 import sys
 from textwrap import dedent
-from typing import Dict, List, IO, Tuple
+from typing import IO
+import dict, list, tuple
 
 from pyspark.accumulators import _accumulatorRegistry
 from pyspark.errors import PySparkRuntimeError, PySparkValueError
@@ -69,12 +70,12 @@ def read_udtf(infile: IO) -> type:
     return handler
 
 
-def read_arguments(infile: IO) -> Tuple[List[AnalyzeArgument], Dict[str, AnalyzeArgument]]:
+def read_arguments(infile: IO) -> tuple[list[AnalyzeArgument], dict[str, AnalyzeArgument]]:
     """Reads the arguments for `analyze` static method."""
     # Receive arguments
     num_args = read_int(infile)
-    args: List[AnalyzeArgument] = []
-    kwargs: Dict[str, AnalyzeArgument] = {}
+    args: list[AnalyzeArgument] = []
+    kwargs: dict[str, AnalyzeArgument] = {}
     for _ in range(num_args):
         dt = _parse_datatype_json_string(utf8_deserializer.loads(infile))
         is_constant_expression = read_bool(infile)

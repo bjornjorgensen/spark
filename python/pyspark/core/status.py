@@ -17,7 +17,8 @@
 
 __all__ = ["SparkJobInfo", "SparkStageInfo", "StatusTracker"]
 
-from typing import List, NamedTuple, Optional
+from typing import NamedTuple, Optional
+import list
 
 from py4j.java_collections import JavaArray
 from py4j.java_gateway import JavaObject
@@ -65,7 +66,7 @@ class StatusTracker:
     def __init__(self, jtracker: JavaObject):
         self._jtracker = jtracker
 
-    def getJobIdsForGroup(self, jobGroup: Optional[str] = None) -> List[int]:
+    def getJobIdsForGroup(self, jobGroup: Optional[str] = None) -> list[int]:
         """
         Return a list of all known jobs in a particular job group.  If
         `jobGroup` is None, then returns all known jobs that are not
@@ -77,13 +78,13 @@ class StatusTracker:
         """
         return list(self._jtracker.getJobIdsForGroup(jobGroup))
 
-    def getActiveStageIds(self) -> List[int]:
+    def getActiveStageIds(self) -> list[int]:
         """
         Returns an array containing the ids of all active stages.
         """
         return sorted(list(self._jtracker.getActiveStageIds()))
 
-    def getActiveJobsIds(self) -> List[int]:
+    def getActiveJobsIds(self) -> list[int]:
         """
         Returns an array containing the ids of all active jobs.
         """

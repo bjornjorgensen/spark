@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-from typing import List
+import list
 
 from pyspark.sql import DataFrame as SparkDataFrame, functions as F
 from pyspark.sql.window import Window
@@ -28,7 +28,7 @@ CORRELATION_CORR_OUTPUT_COLUMN = "__correlation_corr_output__"
 CORRELATION_COUNT_OUTPUT_COLUMN = "__correlation_count_output__"
 
 
-def compute(sdf: SparkDataFrame, groupKeys: List[str], method: str) -> SparkDataFrame:
+def compute(sdf: SparkDataFrame, groupKeys: list[str], method: str) -> SparkDataFrame:
     """
     Compute correlation per group, excluding NA/null values.
 

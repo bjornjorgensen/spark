@@ -20,7 +20,8 @@ A collections of builtin protobuf functions
 """
 
 
-from typing import Dict, Optional, TYPE_CHECKING, cast
+from typing import Optional, TYPE_CHECKING, cast
+import dict
 
 from pyspark.sql.column import Column
 from pyspark.sql.utils import get_active_spark_context, try_remote_protobuf_functions
@@ -35,7 +36,7 @@ def from_protobuf(
     data: "ColumnOrName",
     messageName: str,
     descFilePath: Optional[str] = None,
-    options: Optional[Dict[str, str]] = None,
+    options: Optional[dict[str, str]] = None,
     binaryDescriptorSet: Optional[bytes] = None,
 ) -> Column:
     """
@@ -168,7 +169,7 @@ def to_protobuf(
     data: "ColumnOrName",
     messageName: str,
     descFilePath: Optional[str] = None,
-    options: Optional[Dict[str, str]] = None,
+    options: Optional[dict[str, str]] = None,
     binaryDescriptorSet: Optional[bytes] = None,
 ) -> Column:
     """

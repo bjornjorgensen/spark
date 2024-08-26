@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-from typing import List
+import list
 
 
 class ResourceInformation:
@@ -44,7 +44,7 @@ class ResourceInformation:
     :class:`pyspark.resource.ResourceProfile`
     """
 
-    def __init__(self, name: str, addresses: List[str]):
+    def __init__(self, name: str, addresses: list[str]):
         self._name = name
         self._addresses = addresses
 
@@ -59,7 +59,7 @@ class ResourceInformation:
         return self._name
 
     @property
-    def addresses(self) -> List[str]:
+    def addresses(self) -> list[str]:
         """
         Returns
         -------

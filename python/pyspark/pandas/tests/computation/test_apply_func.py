@@ -17,7 +17,7 @@
 from datetime import datetime
 import sys
 import unittest
-from typing import List
+import list
 
 import numpy as np
 import pandas as pd
@@ -244,7 +244,7 @@ class FrameApplyFunctionMixin:
         )
         psdf = ps.from_pandas(pdf)
 
-        def identify3(x) -> ps.DataFrame[float, [int, List[int]]]:
+        def identify3(x) -> ps.DataFrame[float, [int, list[int]]]:
             return x
 
         actual = psdf.pandas_on_spark.apply_batch(identify3)
@@ -274,7 +274,7 @@ class FrameApplyFunctionMixin:
         )
         psdf = ps.from_pandas(pdf)
 
-        def identify4(x) -> ps.DataFrame[[int, str], [int, List[int]]]:
+        def identify4(x) -> ps.DataFrame[[int, str], [int, list[int]]]:
             return x
 
         actual = psdf.pandas_on_spark.apply_batch(identify4)
@@ -285,7 +285,7 @@ class FrameApplyFunctionMixin:
         def identify5(
             x,
         ) -> ps.DataFrame[
-            [("number", int), ("color", str)], [("a", int), ("b", List[int])]  # noqa: F405
+            [("number", int), ("color", str)], [("a", int), ("b", list[int])]  # noqa: F405
         ]:
             return x
 

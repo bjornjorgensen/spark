@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Sequence, TypeVar, TYPE_CHECKING
+from typing import Sequence, TypeVar, TYPE_CHECKING
+import list
 
 from pyspark import since
 from pyspark.ml.linalg import Vector
@@ -232,7 +233,7 @@ class _TreeEnsembleModel(JavaPredictionModel[T]):
 
     @property
     @since("1.5.0")
-    def treeWeights(self) -> List[float]:
+    def treeWeights(self) -> list[float]:
         """Return the weights for each tree"""
         return list(self._call_java("javaTreeWeights"))
 
@@ -268,7 +269,7 @@ class _TreeEnsembleParams(_DecisionTreeParams):
         typeConverter=TypeConverters.toFloat,
     )
 
-    supportedFeatureSubsetStrategies: List[str] = ["auto", "all", "onethird", "sqrt", "log2"]
+    supportedFeatureSubsetStrategies: list[str] = ["auto", "all", "onethird", "sqrt", "log2"]
 
     featureSubsetStrategy: Param[str] = Param(
         Params._dummy(),
@@ -375,7 +376,7 @@ class _HasVarianceImpurity(Params):
     Private class to track supported impurity measures.
     """
 
-    supportedImpurities: List[str] = ["variance"]
+    supportedImpurities: list[str] = ["variance"]
 
     impurity: Param[str] = Param(
         Params._dummy(),
@@ -404,7 +405,7 @@ class _TreeClassifierParams(Params):
     .. versionadded:: 1.4.0
     """
 
-    supportedImpurities: List[str] = ["entropy", "gini"]
+    supportedImpurities: list[str] = ["entropy", "gini"]
 
     impurity: Param[str] = Param(
         Params._dummy(),

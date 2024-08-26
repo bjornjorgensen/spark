@@ -22,7 +22,8 @@ from pyspark.sql.connect.utils import check_dependencies
 check_dependencies(__name__)
 
 import warnings
-from typing import List, Type, TYPE_CHECKING, Optional, Union
+from typing import Type, TYPE_CHECKING, Optional, Union
+import list
 
 from pyspark.util import PythonEvalType
 from pyspark.sql.connect.column import Column
@@ -146,7 +147,7 @@ class UserDefinedTableFunction:
             else:
                 return ColumnReference(col)  # type: ignore[arg-type]
 
-        arg_exprs: List[Expression] = [to_expr(arg) for arg in args] + [
+        arg_exprs: list[Expression] = [to_expr(arg) for arg in args] + [
             NamedArgumentExpression(key, to_expr(value)) for key, value in kwargs.items()
         ]
 
