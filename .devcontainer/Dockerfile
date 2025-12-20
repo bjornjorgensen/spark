@@ -145,6 +145,10 @@ RUN python3 -m pip install --no-cache-dir \
     'googleapis-common-protos>=1.71.0' \
     'zstandard>=0.25.0'
 
+# Remove distutils-installed packages that may conflict with pip upgrades
+RUN rm -rf /usr/lib/python3/dist-packages/blinker* \
+    && rm -rf /usr/lib/python3/dist-packages/Blinker*
+
 # Install core PySpark dependencies
 RUN python3 -m pip install --no-cache-dir \
     'py4j>=0.10.9.9' \
