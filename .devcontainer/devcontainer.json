@@ -1,0 +1,139 @@
+{
+  "name": "Apache Spark Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "VARIANT": "ubuntu-22.04"
+    }
+  },
+  
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      // Set *default* container specific settings.json values on container create
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          },
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-17",
+            "path": "/usr/lib/jvm/java-17-openjdk-amd64"
+          }
+        ],
+        "java.home": "/usr/lib/jvm/java-17-openjdk-amd64",
+        "maven.executable.path": "/usr/bin/mvn",
+        "maven.terminal.useJavaHome": true,
+        "maven.terminal.customEnv": [{
+          "environmentVariable": "JAVA_HOME",
+          "value": "/usr/lib/jvm/java-17-openjdk-amd64"
+        }],
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "editor.formatOnSave": false,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "files.watcherExclude": {
+          "**/target/**": true,
+          "**/.metals/**": true,
+          "**/.bloop/**": true,
+          "**/.ammonite/**": true,
+          "**/work/**": true,
+          "**/logs/**": true
+        },
+        "git.autofetch": true,
+        "git.enableSmartCommit": true,
+        "diffEditor.ignoreTrimWhitespace": false
+      },
+      
+      // Add the IDs of extensions you want installed when the container is created
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven",
+        "scalameta.metals",
+        "scala-lang.scala",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot",
+        "GitHub.vscode-pull-request-github",
+        "mhutchie.git-graph",
+        "streetsidesoftware.code-spell-checker",
+        "editorconfig.editorconfig",
+        "usernamehw.errorlens",
+        "oderwat.indent-rainbow",
+        "PKief.material-icon-theme"
+      ]
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally
+  "forwardPorts": [
+    4040, // Spark UI
+    8080, // Spark Master UI
+    8081, // Spark Worker UI
+    18080 // Spark History Server
+  ],
+
+  // Use 'postCreateCommand' to run commands after the container is created
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Use 'postStartCommand' to run commands each time the container starts
+  "postStartCommand": "git status",
+
+  // Use 'postAttachCommand' to run commands when attaching to the container
+  "postAttachCommand": {
+    "server": "echo 'Welcome to Apache Spark Dev Container! Type \"spark-shell\" to start.'"
+  },
+
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root
+  "remoteUser": "spark-dev",
+
+  // Set environment variables
+  "remoteEnv": {
+    "SPARK_HOME": "/workspace",
+    "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk-amd64",
+    "MAVEN_HOME": "/usr/share/maven",
+    "PATH": "${containerEnv:PATH}:/workspace/bin",
+    "SPARK_LOCAL_IP": "127.0.0.1"
+  },
+
+  // Configure container features
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  // Uncomment to connect as an existing user other than the container default
+  "mounts": [
+    "source=${localWorkspaceFolder}/.m2,target=/home/spark-dev/.m2,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.sbt,target=/home/spark-dev/.sbt,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/.ivy2,target=/home/spark-dev/.ivy2,type=bind,consistency=cached"
+  ],
+
+  // Configure container capabilities
+  "capAdd": [
+    "SYS_PTRACE"
+  ],
+
+  "runArgs": [
+    "--init",
+    "--privileged"
+  ]
+}
