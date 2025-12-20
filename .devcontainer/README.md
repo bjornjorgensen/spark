@@ -27,6 +27,23 @@ To use this Dev Container, you need:
 
 ## Getting Started
 
+### Initial Setup (First Time Only)
+
+Before opening the dev container for the first time, run the setup script to create required directories:
+
+```bash
+# From the repository root
+.devcontainer/setup.sh
+```
+
+Or manually create the directories:
+
+```bash
+mkdir -p .m2 .sbt .ivy2
+```
+
+These directories are needed for build tool caches (Maven, SBT, Ivy) and must exist before the container starts.
+
 ### Option 1: Open in Container (Recommended)
 
 1. Open VS Code
