@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  spark-dev:
+    build:
+      context: .
+      dockerfile: dev/infra/Dockerfile
+    image: spark-dev-infra
+    container_name: spark-development
+    volumes:
+      - .:/workspace
+      - ~/.m2:/root/.m2
+      - ~/.ivy2:/root/.ivy2
+      - ~/.sbt:/root/.sbt
+    working_dir: /workspace
+    ports:
+      - "4040:4040"  # Spark UI
+      - "8080:8080"  # Master UI
+      - "8081:8081"  # Worker UI
+      - "18080:18080" # History Server
+    environment:
+      - SPARK_HOME=/workspace
+      - JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    command: tail -f /dev/null  # Keep container running

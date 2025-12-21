@@ -27,6 +27,7 @@
 .scala_dependencies
 .settings
 .vscode
+.devcontainer
 artifacts/
 /lib/
 R-unit-tests.log
@@ -129,3 +130,4 @@ sql/api/src/main/antlr4/org/apache/spark/sql/catalyst/parser/gen/
 tpcds-sf-1/
 tpcds-sf-1-text/
 tpcds-kit/
+.m2/
